@@ -1,13 +1,11 @@
 # Visualización de la información - ITBA
 # VAST 2018 - Mini challange 1
 # Author: Julián Ailán
-# Excercise: https://docs.google.com/document/d/1jgk9OufqMFkWyV1BIb6ZiG7V6eNWZb-qes6gsP3n1hw/edit
 
 rm(list = ls()); gc()
 
 #### Dataset cleanup. ####
 inputfile  <- '~/Documents/infoviz/tp/option1/MC1 2018/AllBirdsv4.csv'
-# outputfile <- '~/Documents/infoviz/tp/option1/MC1 2018/AllBirdsv4_filtered.csv'
 outputfile <- '~/Documents/infoviz/tp/option1/own/allbirdsfiltered.csv'
 df <- read.csv(inputfile)
 
@@ -21,9 +19,6 @@ write.csv(df, file = outputfile)
 rm(inputfile, outputfile, df)
 
 #### Sound analysis. ####
-# Nice tutorial: http://samcarcagno.altervista.org/blog/basic-sound-processing-r/
-# Spectograms: https://hansenjohnson.org/post/spectrograms-in-r/
-# Example of resolution: https://github.com/chadstolper/vast-challenge-2018-mc1
 library(tuneR)
 library(signal)
 library(seewave)
@@ -136,3 +131,6 @@ for(i in 1:nrow(test.birds)) {
                                                               round(representation[position, ]$frequency, 5))
 }
 rm(path, files, pattern, testbirdattr, distance, min.distance, position, i, points.file, testbird)
+write.csv(similar.average.bird, 
+          file = '~/Documents/infoviz/tp/option1/own/similarities.csv', 
+          row.names = F)
