@@ -6,7 +6,7 @@ rm(list = ls()); gc()
 
 #### Dataset cleanup. ####
 inputfile  <- '~/Documents/infoviz/tp/option1/MC1 2018/AllBirdsv4.csv'
-outputfile <- '~/Documents/infoviz/tp/option1/own/allbirdsfiltered.csv'
+outputfile <- '~/Documents/infoviz/tp-resolution/datasets/allbirdsfiltered.csv'
 df <- read.csv(inputfile)
 
 # Move every vocalization type to lower case.
@@ -26,7 +26,7 @@ library(seewave)
 path  <- '~/Documents/infoviz/tp/option1/MC1 2018/ALL BIRDS'
 files <- list.files(path = path, pattern = '*.mp3', full.names = T, recursive = F)
 pattern <- '/ALL BIRDS/(.*?)(-)(\\d*).mp3'
-points.file <- '~/Documents/infoviz/tp/option1/own/points.csv'
+points.file <- '~/Documents/infoviz/tp-resolution/datasets/points.csv'
 
 durations <- numeric(length(files))
 for(i in 1:length(files)) {
@@ -124,13 +124,45 @@ for(i in 1:nrow(test.birds)) {
                    ((test.birds$frequency[i] - representation$frequency) ^ 2))
   min.distance <- min(distance)
   position <- which(distance == min.distance)
-  similar.average.bird[nrow(similar.average.bird) + 1, ] <- c(round(min.distance, 5), 
-                                                              i,
-                                                              representation[position, ]$species,
-                                                              round(test.birds$frequency[i], 5),
-                                                              round(representation[position, ]$frequency, 5))
+  similar.average.bird[nrow(similar.average.bird) + 1, ] <- c(
+    round(min.distance, 5), 
+    i,
+    representation[position, ]$species,
+    round(test.birds$frequency[i], 5),
+    round(representation[position, ]$frequency, 5))
 }
 rm(path, files, pattern, testbirdattr, distance, min.distance, position, i, points.file, testbird)
 write.csv(similar.average.bird, 
-          file = '~/Documents/infoviz/tp/option1/own/similarities.csv', 
+          file = '~/Documents/infoviz/tp-resolution/datasets/similarities.csv', 
           row.names = F)
+
+#### Matching between historical birds data and Kasios' birds data only for birds from 2017 onwards. ####
+joint <- read.csv('~/Documents/infoviz/tp-resolution/datasets/joint.csv', header = T)
+colnames(joint) <- c('from2017onwards', 'date', 'species', 'power', 'frequency', 'vocalization', 'x', 'y')
+from.2017.onwards <- joint[joint$from2017onwards == 'True', ]; rm(joint)
+
+similar.average.bird.recent <- data.frame('distance' = numeric(0),
+                                                     'kasios.species' = character(0),
+                                                     'original.species' = character(0),
+                                                     'kasios.frequency' = numeric(0),
+                                                     'original.frequency' = numeric(0),
+                                                     stringsAsFactors = F)
+for(i in 1:nrow(test.birds)) {
+  distance <- sqrt(((test.birds$power[i] - from.2017.onwards$power) ^ 2) + 
+                   ((test.birds$frequency[i] - from.2017.onwards$frequency) ^ 2))
+  min.distance <- min(distance)
+  position <- which(distance == min.distance)
+  similar.average.bird.recent[nrow(similar.average.bird.recent) + 1, ] <- c(
+    round(min.distance, 5), 
+    i,
+    toString(from.2017.onwards[position, ]$species),
+    round(test.birds$frequency[i], 5),
+    round(from.2017.onwards[position, ]$frequency, 5))
+}
+
+library(plyr)
+similarities.grouping <- count(similar.average.bird.recent, 'original.species')
+write.csv(similar.average.bird.recent, 
+          file = '~/Documents/infoviz/tp-resolution/datasets/similarities2017.csv', 
+          row.names = F)
+rm(distance, i, min.distance, position)
